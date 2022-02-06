@@ -21,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug\BuildLog.htm" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
