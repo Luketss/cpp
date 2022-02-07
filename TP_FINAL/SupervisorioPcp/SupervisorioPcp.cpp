@@ -911,27 +911,31 @@ void WINAPI CapturaSupervisorio()
 			std::list<string>::iterator it;
 			for (it = listaMemoria.begin(); it != listaMemoria.end(); ++it)
 			{
+				msg.assign(it->data());
+				cout << msg << endl;
+				listaMemoria.erase(it);
+				break;
 				// Testa se a mensagem é um alarme. Se for, vai pra proxima iteração.
-				if (it->data()[7] == '2' || it->data()[7] == '9')
-				{
-					continue;
-				}
-				// Testa se a mensagem é um dado do processo. Se for, pega e exibe na tela.
-				else if (it->data()[7] == '1')
-				{
-					// Pega mensagem da lista e imprime no console
-					msg.assign(it->data());
-					//cout << "(CapturaSupervisorio): " << msg << endl;
-					cout << msg << endl;
+				//if (it->data()[7] == '2' || it->data()[7] == '9')
+				//{
+				//	continue;
+				//}
+				//// Testa se a mensagem é um dado do processo. Se for, pega e exibe na tela.
+				//else if (it->data()[7] == '1')
+				//{
+				//	// Pega mensagem da lista e imprime no console
+				//	msg.assign(it->data());
+				//	//cout << "(CapturaSupervisorio): " << msg << endl;
+				//	cout << msg << endl;
 
-					//Apaga mensagem da lista
-					listaMemoria.erase(it);
-					break;
-				}
-				else
-				{
-					cout << "(CapturaSupervisorio): Erro ao pegar msg na lista." << endl;
-				}
+				//	//Apaga mensagem da lista
+				//	listaMemoria.erase(it);
+				//	break;
+				//}
+				//else
+				//{
+				//	cout << "(CapturaSupervisorio): Erro ao pegar msg na lista." << endl;
+				//}
 			}
 
 			// Testa se tarefa de leitura do Supervisorio está esperando esvaziar lista
@@ -1145,29 +1149,33 @@ void WINAPI CapturaPCP()
 			std::list<string>::iterator it;
 			for (it = listaMemoria.begin(); it != listaMemoria.end(); ++it)
 			{
+				msg.assign(it->data());
+				cout << msg << endl;
+				listaMemoria.erase(it);
+				break;
 				//cout << "(CapturaPCP): Entrou no for." << endl;
 				// Testa se a mensagem é um dado do processo. Se for, vai pra proxima iteração.
-				if (it->data()[7] == '1')
-				{
-					continue;
-				}
-				// Testa se a mensagem é um alarme. Se for, pega e exibe na tela.
-				else if (it->data()[7] == '2' || it->data()[7] == '9')
-				{
+				//if (it->data()[7] == '1')
+				//{
+				//	continue;
+				//}
+				//// Testa se a mensagem é um alarme. Se for, pega e exibe na tela.
+				//else if (it->data()[7] == '2' || it->data()[7] == '9')
+				//{
 
-					// Pega mensagem da lista e imprime no console
-					msg.assign(it->data());
-					//cout << "(CapturaPCP): " << msg << endl;
-					cout << msg << endl;
+				//	// Pega mensagem da lista e imprime no console
+				//	msg.assign(it->data());
+				//	//cout << "(CapturaPCP): " << msg << endl;
+				//	cout << msg << endl;
 
-					//Apaga mensagem da lista
-					listaMemoria.erase(it);
-					break;
-				}
-				else
-				{
-					cout << "(CapturaPCP): Erro ao pegar msg na lista." << endl;
-				}
+				//	//Apaga mensagem da lista
+				//	listaMemoria.erase(it);
+				//	break;
+				//}
+				//else
+				//{
+				//	cout << "(CapturaPCP): Erro ao pegar msg na lista." << endl;
+				//}
 			}
 
 			// Testa se tarefa de leitura do PCP está esperando esvaziar lista
@@ -1289,14 +1297,15 @@ string GeraMsg(int NSEQ, int tipo)
 			<< ':' << std::setfill('0') << std::setw(2) << timestamp.wSecond;
 
 
-		// Monta mensagem de alarme que será retornada para thread LePCP
-		ssMsg << ssNSEQ.str() << '|' << tipo << '|' << ssIdAlarme.str() << '|' << ssGrau.str() << '|' << ssPrev.str() << '|' << strTimestamp.str() << endl;
-
+			// Monta mensagem de alarme que será retornada para thread LePCP
+			//ssMsg << ssNSEQ.str() << '|' << tipo << '|' << ssIdAlarme.str() << '|' << ssGrau.str() << '|' << ssPrev.str() << '|' << strTimestamp.str() << endl;
+			ssMsg << 5;
 		return ssMsg.str();
 	}// Fim tipo 2 e 9
 
 	// Não deve chegar aqui
-	return "Erro";
+	cout << "a" << endl;
+	return 0;
 }// ------------------------------- FIM GeraMsg ------------------------------- //
 
 // ------------------------------- Função gen_random ------------------------------- //
@@ -1315,6 +1324,18 @@ string gen_random(const int len, int multiplicador)
 	srand((unsigned)time(NULL) * multiplicador);
 
 	tmp_s.reserve(len);
+
+	for (int i = 0; i < len; ++i)
+		tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+
+	return tmp_s;
+}// ------------------------------- FIM gen_random ------------------------------- //
+
+string gen_random_num(const int len)
+{
+	string tmp_s;
+	static const char alphanum[] =
+		"0123456789";
 
 	for (int i = 0; i < len; ++i)
 		tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
