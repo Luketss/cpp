@@ -58,7 +58,7 @@ const int buffer_size = 200;
 const int buffer_2_size = 100;
 int p_livre = 0;
 int p_ocupado = 0;
-int timeout = 100;
+int timeout = 1000;
 
 /* cria variaveis mapeadas em memoria para sincronizacao da lista 2 */
 
@@ -330,6 +330,9 @@ int main()
         case tecla_1:
             WriteFile(mailslot, &exibicao_de_processos_clear_screen_signal, sizeof(int), &sent_bytes, NULL);
             break;
+        case tecla_2:
+            WriteFile(mailslot, &exibicao_de_processos_clear_screen_signal, sizeof(int), &sent_bytes, NULL);
+            break;
         }
     } while (key != ESC);
 
@@ -589,8 +592,6 @@ DWORD WINAPI captura_mensagens(void* id)
         FILE_ATTRIBUTE_NORMAL,
         NULL
     );
-
-    //CheckForError(message_mailslot != INVALID_HANDLE_VALUE);
 
     do {
 

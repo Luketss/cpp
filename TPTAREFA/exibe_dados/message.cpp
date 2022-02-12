@@ -61,7 +61,6 @@ void show_message(MessageSupervisor msg) {
 }
 
 void Gen(char* op) {
-    srand(time(0));
 
     int len = 9;
     char letters[] = "abcdefghijklmnopqrstuvwxyz";
@@ -70,11 +69,7 @@ void Gen(char* op) {
 
     for (int i = 0; i < len; ++i)
     {
-        if (i == 3)
-        {
-            op[i] = '-';
-        }
-        else if (i < 4)
+        if (i < 4)
         {
             op[i] = letters[rand() % 26];
         }
@@ -82,6 +77,9 @@ void Gen(char* op) {
         {
             op[i] = numbers[rand() % 10];
         }
+
+        op[3] = '-';
+        op[8] = 0;
     }
 
     
