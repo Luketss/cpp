@@ -19,12 +19,13 @@ typedef unsigned* CAST_LPDWORD;
 /* define teclas para controle de bloqueio e desbloqueio de threads */
 
 #define	ESC			    0x1B
-#define	tecla_g			0x67
-#define	tecla_c			0x63
-#define	tecla_r			0x72
+#define	tecla_l			0x6c
 #define	tecla_p			0x70
-#define	tecla_a			0x61
-#define	tecla_1			0x6C
+#define	tecla_r			0x72
+#define	tecla_s			0x73
+#define	tecla_e			0x65
+#define	tecla_1			0x31
+#define	tecla_2			0x32
 
 /* cria handles para eventos de toggle */
 
@@ -292,13 +293,14 @@ int main()
         "\n Processo de pelotização e medição de supervisor"
         "\n..................................................."
         "\n Bloqueio/retomada da execução de tarefas:"
-        "\n Tecla g: Tarefa de leitura de dados de medição"
-        "\n Tecla c: Tarefa de leitura de dados de processo"
+        "\n Tecla l: Tarefa de leitura de dados de medição"
+        "\n Tecla p: Tarefa de leitura de dados de processo"
         "\n Tecla r: Tarefa de captura de mensagens"
-        "\n Tecla p: Tarefa de exibição de dados de processo"
-        "\n Tecla a: Tarefa de análise de supervisor"
+        "\n Tecla s: Tarefa de exibição de dados de processo"
+        "\n Tecla e: Tarefa de análise de supervisor"
         "\n..................................................."
-        "\n Tecla l: Limpar tela de monitor de exibição de dados de processo"
+        "\n Tecla 1: Limpar tela de monitor de exibição de dados de processo"
+        "\n Tecla 2: Limpar tela de monitor de gestao da producao"
         "\n..................................................."
         "\n Para encerrar o processo: ESC"
         "\n___________________________________________________\n");
@@ -310,19 +312,19 @@ int main()
         key = _getch();
 
         switch (key) {
-        case tecla_g:
+        case tecla_l:
             SetEvent(leitura_medicao_toggle_event);
             break;
-        case tecla_c:
+        case tecla_p:
             SetEvent(leitura_dados_toggle_event);
             break;
         case tecla_r:
             SetEvent(captura_mensagens_toggle_event);
             break;
-        case tecla_p:
+        case tecla_s:
             SetEvent(exibe_dados_toggle_event);
             break;
-        case tecla_a:
+        case tecla_e:
             SetEvent(analise_supervisor_toggle_event);
             break;
         case tecla_1:

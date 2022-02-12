@@ -7,6 +7,7 @@
 #include <conio.h>
 #include <mutex>
 #include <process.h>
+#include <pthread.h>
 
 #include "supervisorio.h"
 #include "ListFunctions.h"
@@ -36,23 +37,14 @@ void StartSupervisorio()
 	}
 }
 
-void StartPCP()
+void* StartPCP(void* ptr)
 {
-	using namespace std::literals::chrono_literals;
+	string t = GeneratePCPMessage();
+	std:: cout << t << std::endl;
+	return 0;
 
-	std::cout << "Thread id= " << std::this_thread::get_id() << std::endl;
-
-	while (!s_Finished)
-	{
-		string t = GeneratePCPMessage();
-		m.lock();
-		head = insertAtEnd(head, t);
-		printList(head);
-		m.unlock();
-		//cout << getCount(head) << endl;
-		std::this_thread::sleep_for(2s);
-	}
 }
+
 
 int main()
 {
@@ -66,31 +58,27 @@ int main()
 	HANDLE hEvent;			// Handle para Evento
 	HANDLE hEscEvent;		// Handle para Evento Aborta
 
-	status = CreateProcess(
-		L"..\\x64\\Debug\\supervisorio.exe", // Caminho do arquivo executável
-		NULL,                       // Apontador p/ parâmetros de linha de comando
-		NULL,                       // Apontador p/ descritor de segurança
-		NULL,                       // Idem, threads do processo
-		FALSE,	                     // Herança de handles
-		NORMAL_PRIORITY_CLASS,	     // Flags de criação
-		NULL,	                     // Herança do amniente de execução
-		L"..\\x64\\Debug",              // Diretório do arquivo executável
-		&si,			             // lpStartUpInfo
-		&ProcessSupervisorio);	             // lpProcessInformation
-	if (!status) printf("Erro na criacao do supervisorio! Codigo = %d\n", GetLastError());
-
-	//SetConsoleTitle("Programa 2.1 - Criando Threads");
-	//_getch();
 	
-	/*Node* ptrDelete = searchNode(head, 40);*/
-	//bool delSuccess = deleteNode(head, ptrDelete);
-	std::thread worker(StartSupervisorio);
-	std::thread worker2(StartPCP);
-	
-	std::cin.get();
-	s_Finished = true;
+	pthread_t thread1, thread2;
+	std::string message1 = "t1";
+	std::string message2 = "Thread 2";
+	int  iret1, iret2;
 
-	worker.join();
+	/* Create independent threads each of which will execute function */
+
+	iret1 = pthread_create(&thread1, NULL, StartPCP, (void*)&message1);
+	iret2 = pthread_create(&thread2, NULL, StartPCP, (void*)&message2);
+
+	/* Wait till threads are complete before main continues. Unless we  */
+	/* wait we run the risk of executing an exit which will terminate   */
+	/* the process and all threads before the threads have completed.   */
+
+	pthread_join(thread1, NULL);
+	pthread_join(thread2, NULL);
+
+	printf("Thread 1 returns: %d\n", iret1);
+	printf("Thread 2 returns: %d\n", iret2);
+	exit(0);
 	std::cout << "Finished" << std::endl;
 
 	std::cin.get();

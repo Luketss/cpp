@@ -35,13 +35,13 @@ void show_message(MessageSupervisor msg);
 typedef struct {
     int tipo;
     int nseq;
-    char op[7];
+    char op[8];
     int duracao;
     Timestamp time;
 
 } MessagePCP;
 
-MessagePCP create_message(int nseq, char op[7], int duracao, Timestamp time, int tipo);
+MessagePCP create_message(int nseq, int duracao, Timestamp time, int tipo);
 
 MessagePCP generate_message_pcp(int& nseq);
 

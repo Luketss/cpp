@@ -1040,8 +1040,6 @@ void WINAPI LePCP()
 			NSEQ_PCP++;
 		}
 
-		//cout << "(LePCP): " << listaMemoria.back() << endl;
-
 		// Testa se tarefa de captura está esperando inserção na lista
 		WaitForSingleObject(hMutexEstadoCapturaPCP, INFINITE);
 		if (!EstadoCapturaPCP && ListaVaziaPCP && !CapturaPCPFoiBloqueada)
@@ -1213,6 +1211,7 @@ string GeraMsg(int NSEQ, int tipo)
 	if (tipo == 1)
 	{
 		stringstream ssValor;
+		int ssType = 5;
 		char cModo;
 
 		// Campo = NSEQ
@@ -1253,8 +1252,8 @@ string GeraMsg(int NSEQ, int tipo)
 			<< ':' << std::setfill('0') << std::setw(2) << timestamp.wSecond << '.' << std::setfill('0') << std::setw(3) << timestamp.wMilliseconds;
 
 		// Monta mensagem de dados que será retornada para thread LeSupervisorio
-		ssMsg << ssNSEQ.str() << '#' << tipo << '#' << gen_random(10, timestamp.wMilliseconds) << '#' << ssValor.str() << '#'
-			<< gen_random(8, timestamp.wMilliseconds + timestamp.wSecond) << '#' << cModo << '#' << strTimestamp.str() << endl;
+		ssMsg << ssType << '#' << ssNSEQ.str() << '#' << tipo << '#' << gen_random_num(5) << '#' << gen_random_num(5) << '#'
+			<< gen_random(8, timestamp.wMilliseconds + timestamp.wSecond) << '#' << gen_random_num(5) << '#' << strTimestamp.str() << endl;
 
 		return ssMsg.str();
 	}// Fim tipo 1
@@ -1333,12 +1332,12 @@ string gen_random(const int len, int multiplicador)
 
 string gen_random_num(const int len)
 {
-	string tmp_s;
+	string tmp_num;
 	static const char alphanum[] =
 		"0123456789";
 
 	for (int i = 0; i < len; ++i)
-		tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+		tmp_num += alphanum[rand() % (sizeof(alphanum) - 1)];
 
-	return tmp_s;
+	return tmp_num;
 }// ------------------------------- FIM gen_random ------------------------------- //
