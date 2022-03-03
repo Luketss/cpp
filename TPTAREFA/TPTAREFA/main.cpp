@@ -29,7 +29,7 @@ typedef unsigned* CAST_LPDWORD;
 
 /* cria handles para eventos de toggle */
 
-HANDLE leitura_medicao_toggle_event;
+HANDLE leitura_gestao_toggle_event;
 HANDLE leitura_dados_toggle_event;
 HANDLE captura_mensagens_toggle_event;
 HANDLE exibe_dados_toggle_event;
@@ -135,6 +135,19 @@ DWORD WINAPI leitura_medicao(void*);
 DWORD WINAPI leitura_dados(void*);
 DWORD WINAPI captura_mensagens(void*);
 
+void Clear()
+{
+#if defined _WIN32
+    system("cls");
+    //clrscr(); // including header file : conio.h
+#elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
+    system("clear");
+    //std::cout<< u8"\033[2J\033[1;1H"; //Using ANSI Escape Sequences 
+#elif defined (__APPLE__)
+    system("clear");
+#endif
+}
+
 int main()
 {
     // Habilitando acentuacão gráfica
@@ -174,8 +187,8 @@ int main()
 
     /* declara threads */
 
-    HANDLE thread_leitura_medicao;
-    DWORD thread_leitura_medicao_id;
+    HANDLE thread_leitura_gestao;
+    DWORD thread_leitura_gestao_id;
 
     HANDLE thread_leitura_dados;
     DWORD thread_leitura_dados_id;
@@ -187,7 +200,7 @@ int main()
 
     leitura_dados_toggle_event = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-    leitura_medicao_toggle_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    leitura_gestao_toggle_event = CreateEvent(NULL, FALSE, FALSE, NULL);
 
     captura_mensagens_toggle_event = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -206,10 +219,10 @@ int main()
 
     /* cria threads */
 
-    thread_leitura_medicao = (HANDLE)_beginthreadex(NULL, 0, (CAST_FUNCTION)leitura_medicao,
+    thread_leitura_gestao = (HANDLE)_beginthreadex(NULL, 0, (CAST_FUNCTION)leitura_medicao,
         (void*)0,
         0,
-        (CAST_LPDWORD)&thread_leitura_medicao_id
+        (CAST_LPDWORD)&thread_leitura_gestao_id
     );
 
 
@@ -227,12 +240,12 @@ int main()
     );
 
 
-    HANDLE threads[3] = { thread_leitura_medicao, thread_leitura_dados, thread_captura_mensagens };
+    HANDLE threads[3] = { thread_leitura_gestao, thread_leitura_dados, thread_captura_mensagens };
 
     /* Curiosidade: se o vetor acima for criado antes das atribuições das threads, a main não espera o término
      * das threads por meio da função WaitForMultipleObjects */
 
-    if (thread_leitura_medicao) printf("thread leitura de medicao criada com id = %0x \n", thread_leitura_medicao_id);
+    if (thread_leitura_gestao) printf("thread leitura de medicao criada com id = %0x \n", thread_leitura_gestao_id);
     if (thread_leitura_dados) printf("thread leitura dados criada com id = %0x \n", thread_leitura_dados_id);
     if (thread_captura_mensagens) printf("thread captura mensagens criada com id = %0x \n", thread_captura_mensagens_id);
 
@@ -282,6 +295,16 @@ int main()
         NULL
     );
 
+    HANDLE mslot = CreateFile(
+        L"\\\\.\\mailslot\\analise_mailslot",
+        GENERIC_WRITE,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+
     char key;
     int exibicao_de_processos_clear_screen_signal = 1;
 
@@ -313,7 +336,7 @@ int main()
 
         switch (key) {
         case tecla_l:
-            SetEvent(leitura_medicao_toggle_event);
+            SetEvent(leitura_gestao_toggle_event);
             break;
         case tecla_p:
             SetEvent(leitura_dados_toggle_event);
@@ -331,7 +354,7 @@ int main()
             WriteFile(mailslot, &exibicao_de_processos_clear_screen_signal, sizeof(int), &sent_bytes, NULL);
             break;
         case tecla_2:
-            WriteFile(mailslot, &exibicao_de_processos_clear_screen_signal, sizeof(int), &sent_bytes, NULL);
+            WriteFile(mslot, &exibicao_de_processos_clear_screen_signal, sizeof(int), &sent_bytes, NULL);
             break;
         }
     } while (key != ESC);
@@ -346,10 +369,10 @@ int main()
 
     /* encerra handles e mapeamento em memoria */
 
-    CloseHandle(thread_leitura_medicao);
+    CloseHandle(thread_leitura_gestao);
     CloseHandle(thread_leitura_dados);
     CloseHandle(thread_captura_mensagens);
-    CloseHandle(leitura_medicao_toggle_event);
+    CloseHandle(leitura_gestao_toggle_event);
     CloseHandle(leitura_dados_toggle_event);
     CloseHandle(captura_mensagens_toggle_event);
     CloseHandle(end_event);
@@ -379,13 +402,15 @@ int main()
 }  // main
 
 
+
+
 DWORD WINAPI leitura_medicao(void* id)
 {
     /* cria arrays para funçõeses WaitForMultipleObjects */
 
     /* para fazer o toggle desta thread */
 
-    HANDLE Events[2] = { leitura_medicao_toggle_event, end_event };
+    HANDLE Events[2] = { leitura_gestao_toggle_event, end_event };
 
     /* para permitir que essa thread encerre, se bloqueada ao tentar escrever no buffer */
 
@@ -496,10 +521,10 @@ DWORD WINAPI leitura_dados(void* id)
         ret = WaitForSingleObject(sem_livre, timeout);
 
         if (ret == WAIT_TIMEOUT) {
-            printf("\n************************************************************************************************************"
+            printf("\n---------------------------------------------------------------------------------------------------------------"
                 "\nCapacidade máxima da primeira lista circular em memória atingida."
                 "\nThread de leitura de dados do processo tentou depositar informação e está se bloqueando até livrar posição."
-                "\n************************************************************************************************************\n");
+                "\n---------------------------------------------------------------------------------------------------------------\n");
             ret = WaitForMultipleObjects(2, buffer_block_objects, FALSE, INFINITE);
             ret = ret - WAIT_OBJECT_0;
             if (ret == 1) { break; }

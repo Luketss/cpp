@@ -68,7 +68,6 @@ int main() {
         0, // se nao houver mensagem  prossegue com execucao
         NULL);
 
-    //CheckForError(mailslot != INVALID_HANDLE_VALUE);
 
     /* mailslot de mensagem */
 

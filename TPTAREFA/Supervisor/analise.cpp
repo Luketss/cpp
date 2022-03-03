@@ -6,8 +6,37 @@
 
 #include"message.h"
 
-//#define _CHECKERROR	1
-//#include "CheckForError.h"
+void clear_screen() {
+
+    DWORD count;
+    DWORD cell_count;
+
+    COORD home_coords = { 0, 0 };
+
+    HANDLE std_out;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    std_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (std_out == INVALID_HANDLE_VALUE) return;
+
+    /* recupera numero de celular em buffer atual */
+
+    if (!GetConsoleScreenBufferInfo(std_out, &csbi)) return;
+    cell_count = csbi.dwSize.X * csbi.dwSize.Y;
+
+    /* preenche o buffer inteiro com espacos */
+
+    if (!FillConsoleOutputCharacter(
+        std_out,
+        (TCHAR)' ',
+        cell_count,
+        home_coords,
+        &count
+    )) return;
+
+    SetConsoleCursorPosition(std_out, home_coords);
+
+}
 
 int main() {
 
@@ -32,6 +61,7 @@ int main() {
     /* abre segunda lista mapeada em memoria */
 
     HANDLE mapped_memory = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, L"lista_2");
+ 
 
 
     Message* second_buffer_local = (Message*)MapViewOfFile(
@@ -66,13 +96,27 @@ int main() {
 
     printf("\nProcesso analise de supervisor disparado\n");
 
+    HANDLE mslot;
+    mslot = CreateMailslot(
+        L"\\\\.\\mailslot\\analise_mailslot",
+        0,
+        0, // se nao houver mensagem  prossegue com execucao
+        NULL);
+
     HANDLE events[2] = { toggle_event, end_event };
     HANDLE occupied_sem_events[3] = { sem_ocupado, end_event, toggle_event };
 
     int data_index;
     Message recovered_data;
 
+    int signal;
+
     do {
+        signal = 0;
+
+        bool status = ReadFile(mslot, &signal, sizeof(int), NULL, NULL);
+
+        if (signal) clear_screen();
 
         ret = WaitForSingleObject(sem_ocupado, 100);
 
